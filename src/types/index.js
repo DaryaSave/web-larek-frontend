@@ -1,3 +1,4 @@
+// src/types/index.ts
 // Типы событий (если используется брокер событий)
 export var EventTypes;
 (function (EventTypes) {
@@ -5,3 +6,5 @@ export var EventTypes;
     EventTypes["REMOVE_FROM_BASKET"] = "REMOVE_FROM_BASKET";
     EventTypes["ORDER_PLACED"] = "ORDER_PLACED";
 })(EventTypes || (EventTypes = {}));
+// Экспорт всех типов для удобного импорта
+export * from './index';

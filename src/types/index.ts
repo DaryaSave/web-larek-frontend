@@ -1,16 +1,18 @@
+// src/types/index.ts
+
 // Типы данных для товаров
-export interface IProduct {
+export interface IProductItem {
     id: string;
     title: string;
     description: string;
     price: number;
-    image: string;
+    imageUrl: string;
     category: string;
 }
 
 // Типы данных для корзины
 export interface ICartItem {
-    product: IProduct;
+    product: IProductItem;
     quantity: number;
 }
 
@@ -44,12 +46,12 @@ export interface IOrderResult {
 
 // Типы данных для API-клиента
 export interface IProductAPI {
-    getProductList(): Promise<IProduct[]>;
+    getProductList(): Promise<IProductItem[]>;
     placeOrder(order: IOrder): Promise<IOrderResult>;
 }
 
 // Типы данных для отображения (компоненты)
-export interface ICard extends IProduct {
+export interface ICard extends IProductItem {
   _brand?: never;
 }
 
@@ -59,17 +61,18 @@ export interface IFormState {
     errors: string[];
 }
 
-export interface IOrderFormState {
-    payment: string;
-    address: string;
-    email: string;
-    phone: string;
-}
 export interface IOrderFormState extends IFormState, IOrderForm {}
 
 export interface IContactsFormState extends IFormState {
     email: string;
     phone: string;
+}
+
+// Интерфейс пользователя
+export interface IUser {
+    id: string;
+    name: string;
+    email: string;
 }
 
 // Типы событий (если используется брокер событий)
@@ -82,4 +85,12 @@ export enum EventTypes {
 export interface IEvent<T = unknown> {
     type: EventTypes;
     data: T;
+}
+
+// Экспорт всех типов для удобного импорта
+export * from './index';
+
+// Тип данных для модального окна
+export interface IModalData {
+  content: HTMLElement;
 }
