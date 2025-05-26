@@ -1,5 +1,5 @@
 // ===== UserInfo.ts =====
-import { Api } from './base/api';
+import { Api } from '../components/base/api';
 import { IUser } from '../types';
 
 /**

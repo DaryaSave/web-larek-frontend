@@ -8,6 +8,7 @@ export interface IProductItem {
     price: number;
     imageUrl: string;
     category: string;
+
 }
 
 // Типы данных для корзины

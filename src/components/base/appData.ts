@@ -1,5 +1,5 @@
 // ===== AppData.ts =====
-import { Api } from '../base/api';
+import { Api } from './api';
 import { UserInfo } from '../userInfo';
 import { IProductItem } from '../../types';
 
@@ -28,7 +28,7 @@ export class AppData {
   async initApp(): Promise<void> {
     try {
       await this._userInfo.fetchUser();
-      const products = await this._api.get('/products') as IProductItem[];
+      const products = await this._api.getProductList();
       this._items = products;
     } catch (err) {
       console.error('Ошибка инициализации приложения:', err);
@@ -53,7 +53,7 @@ export class AppData {
    * Удаляет товар на сервере и из локального списка.
    */
   async deleteItem(itemId: string): Promise<void> {
-    await this._api.post(`/products/${itemId}`, {}, 'DELETE');
+  await this._api.post(`/product/${itemId}`, {}, 'DELETE')
     this._items = this._items.filter(item => item.id !== itemId);
   }
 

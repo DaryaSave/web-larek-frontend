@@ -1,3 +1,5 @@
+
+
 interface IProductItem {
   id: string;
   title: string;
@@ -41,7 +43,7 @@ return card;
     const category = this._element.querySelector('.card__category');
     const description = this._element.querySelector('.card__text');
     const price = this._element.querySelector('.card__price');
-    const button = this._element.querySelector('.card__button');
+    const button = this._element.querySelector('.button');
     if (button) {
   button.textContent = 'Добавить в корзину';
 }

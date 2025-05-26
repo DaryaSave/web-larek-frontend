@@ -1,4 +1,5 @@
 import { IProductItem } from '../../types';
+import { CDN_URL } from '../../utils/constants';
 
 export type ApiListResponse<Type> = {
     total: number;
@@ -45,13 +46,23 @@ export class Api {
 
     // Метод для получения списка продуктов (исправлено)
     getProductList(): Promise<IProductItem[]> {
-        return this.get<ApiListResponse<IProductItem>>('/product')
+        return this.get<ApiListResponse<any>>('/product')
             .then(data => {
-                // Дополнительная проверка данных (опционально)
-                if (!data.items.every(this.isValidProduct)) {
+                // Преобразуем данные из API к нужному формату
+                const products = data.items.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    description: item.description,
+                    price: item.price ?? 0, // Если price null, то устанавливаем 0
+                    imageUrl: CDN_URL + item.image, // Формируем полный URL изображения
+                    category: item.category
+                }));
+                
+                // Проверяем валидность преобразованных данных
+                if (!products.every(this.isValidProduct)) {
                     throw new Error('Invalid product data format');
                 }
-                return data.items;
+                return products;
             });
     }
 
@@ -64,7 +75,7 @@ export class Api {
         typeof target.title === 'string' &&
         typeof target.description === 'string' &&
         typeof target.price === 'number' &&
-        typeof target.image === 'string' &&
+        typeof target.imageUrl === 'string' &&
         typeof target.category === 'string'
     );
 }

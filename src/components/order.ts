@@ -1,13 +1,15 @@
+import { EventEmitter } from '../components/base/events';
 export class Order {
   private _formElement: HTMLFormElement;
   private _buttons: HTMLElement[];
+  protected _events: EventEmitter;
   public payment = '';
   public address = '';
 
-  constructor(formElement: HTMLFormElement, buttons: HTMLElement[]) {
+  constructor(formElement: HTMLFormElement, buttons: HTMLElement[], events: EventEmitter) {
     this._formElement = formElement;
     this._buttons = buttons;
-
+    this._events = events;
     this.setEventListeners();
   }
 
@@ -56,7 +58,7 @@ export class Order {
 
   setPaymentMethod(method: string): void {
     this.payment = method;
-
+    this._events.emit('payment:changed', method);
     // Обновляем стили кнопок, выделяя выбранную
     this._buttons.forEach(button => {
       if (button.dataset.paymentMethod === method) {

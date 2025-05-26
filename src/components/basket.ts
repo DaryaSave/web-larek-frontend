@@ -16,48 +16,40 @@ export class Basket {
     this._createBasketItem = createBasketItem;
   }
 
-  public render(): void {
+  public render(items: IProductItem[]) {
     this._container.innerHTML = '';
-
-    this._items.forEach((item) => {
+    items.forEach(item => {
       const element = this._createBasketItem(item);
       this._container.appendChild(element);
     });
-
-    this.updateTotal();
+    this._total.textContent = `${items.reduce((sum, item) => sum + item.price, 0)} синапсов`;
   }
 
   public addItem(data: IProductItem): void {
-    // Проверка на дубли (по id)
-    const existingItem = this._items.find((item) => item.id === data.id);
-    if (!existingItem) {
+    if (!this._items.some(item => item.id === data.id)) {
       this._items.push(data);
-      this.render();
+      this.render(this._items);
     }
   }
 
   public removeItem(itemId: string): void {
-    this._items = this._items.filter((item) => item.id !== itemId);
-    this.render();
+    this._items = this._items.filter(item => item.id !== itemId);
+    this.render(this._items);
   }
 
   public clear(): void {
     this._items = [];
-    this.render();
+    this.render(this._items);
   }
 
   public getItems(): IProductItem[] {
     return this._items;
   }
-
-  public updateTotal(): void {
-    const total = this._items.reduce((sum, item) => sum + item.price, 0);
-    this._total.textContent = `${total.toLocaleString()} ₽`;
-  }
 }
+
 export const createBasketItem = (item: IProductItem): HTMLElement => {
   const basketItemTemplate = document.querySelector('#card-basket') as HTMLTemplateElement;
-  const itemElement = basketItemTemplate.content.cloneNode(true) as HTMLElement;
+  const itemElement = basketItemTemplate.content.firstElementChild.cloneNode(true) as HTMLElement;
 
   const titleEl = itemElement.querySelector('.card__title') as HTMLElement;
   const priceEl = itemElement.querySelector('.card__price') as HTMLElement;

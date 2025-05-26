@@ -1,5 +1,5 @@
 import { IProductItem } from '../types';
-import { Card } from '../components/card'; 
+import { Card } from './card'; 
 
 export class Catalog {
   private _container: HTMLElement;

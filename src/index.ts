@@ -1,5 +1,8 @@
 import './scss/styles.scss';
 
+
+import { API_URL } from './utils/constants';
+
 import { Api } from './components/base/api';
 import { EventEmitter } from './components/base/events';
 import { AppState } from './components/base/appState';
@@ -16,7 +19,7 @@ import { createBasketItem } from './components/basket';
 import { Page } from './components/page'; 
 
 // === Инициализация ===
-const api = new Api('https://larek-api.nomoreparties.co');
+const api = new Api(API_URL);
 const events = new EventEmitter();
 const appState = new AppState();
 const page = new Page({
@@ -28,16 +31,21 @@ const page = new Page({
 
 // === DOM-элементы ===
 // Получаем элементы DOM с явным указанием типов
-const catalogContainer = document.querySelector('#catalog') as HTMLElement;
+const catalogContainer = document.querySelector('.gallery') as HTMLElement;
 const basketContainer = document.querySelector('.basket__list') as HTMLElement;
-const totalElement = document.querySelector('.basket__total') as HTMLElement;
-const modalContainer = document.querySelector('#modal') as HTMLElement;
-const orderFormElement = document.querySelector('#orderForm') as HTMLFormElement;
-const contactFormElement = document.querySelector('#contactForm') as HTMLFormElement;
-const paymentButtons = Array.from(document.querySelectorAll('.payment-button')) as HTMLElement[];
+const totalElement = document.querySelector('.basket__price') as HTMLElement;
+const modalContainer = document.querySelector('#modal-container') as HTMLElement;
+const orderFormElement = document.querySelector('#order') as HTMLFormElement;
+const contactFormElement = document.querySelector('#contact') as HTMLFormElement;
+const paymentButtons = Array.from(document.querySelectorAll('.button_alt')) as HTMLElement[];
 const successTotal = document.querySelector('.success__total') as HTMLElement;
 const successClose = document.querySelector('.success__close') as HTMLElement;
 const successMessage = document.querySelector('.success__message') as HTMLElement;
+const basketItemTemplate = document.querySelector('#card-basket');
+if (!basketItemTemplate) {
+  throw new Error('Шаблон корзины #card-basket не найден');
+}
+
 
 // Проверка обязательных элементов
 if (!catalogContainer || !basketContainer || !modalContainer || !totalElement) {
@@ -46,7 +54,7 @@ if (!catalogContainer || !basketContainer || !modalContainer || !totalElement) {
 
 // === Компоненты ===
 // Инициализация компонентов с передачей правильных типов
-const modal = new Modal('.modal');
+const modal = new Modal('#modal-container'); 
 const basket = new Basket(basketContainer, totalElement, createBasketItem);
 const catalog = new Catalog(
   catalogContainer,
@@ -58,20 +66,12 @@ const success = new Success(successTotal, successClose, successMessage);
 
 // Инициализация форм, если элементы существуют
 if (orderFormElement && paymentButtons.length > 0) {
-  new Order(orderFormElement, paymentButtons);
+  new Order(orderFormElement, paymentButtons, events);
 }
 
 if (contactFormElement) {
-  new Contacts(contactFormElement);
+  new Contacts(contactFormElement, events);
 }
-
-// === Загрузка данных ===
-api.getProductList()
-  .then((products: IProductItem[]) => {
-    appState.setCatalog(products);
-    events.emit('catalog:changed');
-  })
-  .catch(console.error);
 
 // === Обработчики событий ===
 
@@ -82,6 +82,7 @@ events.on('catalog:changed', () => {
 
 // Обработка выбора карточки товара
 events.on('card:select', (item: IProductItem) => {
+  modal.close();
   const card = new Card(item, () => events.emit('card:add', item));
   modal.setContent(card.getElement());
   modal.open();
@@ -96,12 +97,17 @@ events.on('card:add', (item: IProductItem) => {
 
 // Обновление отображения корзины
 events.on('basket:updated', () => {
-  basket.render();
+  try {
+  basket.render(appState.basket);
+  } catch (e) {
+    console.error('Ошибка рендеринга корзины:', e);
+  }
 });
 
 // Блокировка прокрутки при открытии модального окна
 events.on('modal:open', () => { 
   page.locked(true); 
+  modal.open();
 });
 
 // Разблокировка прокрутки при закрытии модального окна
@@ -136,7 +142,7 @@ events.on('contacts:open', () => {
 
 // Открытие корзины
 events.on('basket:open', () => {
-  basket.render();
+  basket.render(appState.basket);
   modal.setContent(basketContainer);
   modal.open();
 });
@@ -146,17 +152,17 @@ events.on('basket:close', () => {
   modal.close();
 });
 
-// Событие: Открытие модального окна 
-events.on('modal:open', () => {
-  modal.open();
-});
-
 // Получаем данные с сервера
 api.getProductList()
-    .then((products: IProductItem[]) => {
-        appState.setCatalog(products); // Теперь типы совпадают
-        events.emit('catalog:changed');
-    })
+  .then((products: IProductItem[]) => {
+    if (!products.length) {
+      console.error('API вернул пустой массив товаров');
+      return;
+    }
+    appState.setCatalog(products);
+    events.emit('catalog:changed');
+  })
     .catch((err: Error) => {
         console.error('Ошибка загрузки товаров:', err.message);
     });
+  

@@ -1,73 +1,93 @@
+import { EventEmitter } from '../components/base/events';
+
 export class Contacts {
-  private _formElement: HTMLFormElement;
-  private _inputPhone: HTMLInputElement;
-  private _inputEmail: HTMLInputElement;
+    private _formElement: HTMLFormElement;
+    private _inputPhone: HTMLInputElement;
+    private _inputEmail: HTMLInputElement;
+    private _events: EventEmitter;
+    private _email = '';
+    private _phone = '';
 
-  public email: string;
-  public phone: string;
+    constructor(formElement: HTMLFormElement, events: EventEmitter) {
+        this._formElement = formElement;
+        this._events = events;
 
-  constructor(formElement: HTMLFormElement) {
-    this._formElement = formElement;
+        // Поиск полей с явным приведением типа
+    const inputPhone = this._formElement.querySelector<HTMLInputElement>('input[name="phone"]');
+    const inputEmail = this._formElement.querySelector<HTMLInputElement>('input[name="email"]');
 
-    // Ищем в форме поля для телефона и email по селекторам (например, по имени или id)
-    this._inputPhone = this._formElement.querySelector('input[name="phone"]');
-    if (!this._inputPhone) {
-      throw new Error('Поле "phone" не найдено в форме');
+      if (!inputPhone || !inputEmail) {
+      throw new Error('Не найдены обязательные поля формы');
+        }
+
+        this._inputPhone = inputPhone;
+        this._inputEmail = inputEmail;
+        this.setEventListeners();
     }
 
-    this._inputEmail = this._formElement.querySelector('input[name="email"]');
-    if (!this._inputEmail) {
-      throw new Error('Поле "email" не найдено в форме');
+    // Геттеры и сеттеры для валидации при изменении
+    get email(): string {
+        return this._email;
     }
 
-    // Инициализируем значения из формы
-    this.phone = this._inputPhone.value || '';
-    this.email = this._inputEmail.value || '';
-
-    // Навешиваем обработчики событий
-    this.setEventListeners();
-  }
-
-  /** Возвращает DOM-элемент формы */
-  render(): HTMLFormElement {
-    return this._formElement;
-  }
-
-  /** Навешивает обработчики input, обновляет phone и email */
-  setEventListeners(): void {
-    this._inputPhone.addEventListener('input', () => {
-      this.phone = this._inputPhone.value;
-    });
-    this._inputEmail.addEventListener('input', () => {
-      this.email = this._inputEmail.value;
-    });
-  }
-
-  /** Проверяет корректность email и телефона */
-  validate(): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\+?[0-9\s\-()]{7,}$/;
-
-    const emailValid = emailRegex.test(this.email);
-    const phoneValid = phoneRegex.test(this.phone);
-
-    // Можно добавить отображение ошибок в UI, если нужно (например, подсветку полей)
-    if (!emailValid) {
-      this._inputEmail.setCustomValidity('Неверный формат email');
-    } else {
-      this._inputEmail.setCustomValidity('');
+    set email(value: string) {
+        this._email = value;
+        this._events.emit('contacts:email', value);
     }
 
-    if (!phoneValid) {
-      this._inputPhone.setCustomValidity('Неверный формат телефона');
-    } else {
-      this._inputPhone.setCustomValidity('');
+    get phone(): string {
+        return this._phone;
     }
 
-    // Обновляем встроенный механизм валидации формы
-    this._inputEmail.reportValidity();
-    this._inputPhone.reportValidity();
+    set phone(value: string) {
+        this._phone = value;
+        this._events.emit('contacts:phone', value);
+    }
 
-    return emailValid && phoneValid;
-  }
+    render(): HTMLFormElement {
+        return this._formElement;
+    }
+
+    private handleInput = (field: 'phone' | 'email', value: string) => {
+        this[field] = value;
+    };
+
+    setEventListeners(): void {
+        this._inputPhone.addEventListener('input', () => 
+            this.handleInput('phone', this._inputPhone.value)
+        );
+        this._inputEmail.addEventListener('input', () => 
+            this.handleInput('email', this._inputEmail.value)
+        );
+    }
+
+    validate(): boolean {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[\d\s\-()]{7,}$/;
+
+        const isValid = {
+            email: emailRegex.test(this.email),
+            phone: phoneRegex.test(this.phone)
+        };
+
+        this._inputEmail.setCustomValidity(
+            isValid.email ? '' : 'Неверный формат email'
+        );
+        this._inputPhone.setCustomValidity(
+            isValid.phone ? '' : 'Неверный формат телефона'
+        );
+
+        // Принудительное обновление состояния валидации
+        this._formElement.classList.toggle('form_invalid', !(isValid.email && isValid.phone));
+        
+        return isValid.email && isValid.phone;
+    }
+
+    // Метод для очистки
+    clear() {
+        this.phone = '';
+        this.email = '';
+        this._formElement.reset();
+        this._formElement.classList.remove('form_invalid');
+    }
 }

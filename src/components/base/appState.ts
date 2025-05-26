@@ -1,4 +1,3 @@
-// ===== AppState.ts =====
 import {
   IProductItem,
   IOrder,
