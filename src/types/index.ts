@@ -8,7 +8,6 @@ export interface IProductItem {
     price: number;
     imageUrl: string;
     category: string;
-
 }
 
 // Типы данных для корзины
@@ -21,6 +20,10 @@ export interface IBasket {
     items: ICartItem[];   // Список товаров в корзине
     isActive: boolean;    // Состояние выбранной корзины (открыта/закрыта и т.п.)
     total: number;        // Итоговая сумма корзины
+}
+
+export interface IBasketItem extends IProductItem {
+  index: number;
 }
 
 // Типы данных для заказов

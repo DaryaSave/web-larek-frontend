@@ -26,6 +26,7 @@
 
     .card__title {
       flex-grow: 1;
+  
     }
   }
 
@@ -38,6 +39,7 @@
     @include mixins.flex(row);
     align-items: center;
     gap: $defaultPadding;
+    font-size: 30px;
   }
 
   &__image {
@@ -50,10 +52,12 @@
     font-weight: 500;
     margin: 0;
     flex-grow: 1;
+    text-align: start;
   }
   &__text {
     text-align: left;
     flex-grow: 1;
+    font-size: 30px;
   }
   &__category {
     padding: 0.5rem 1.25rem;
@@ -81,6 +85,6 @@
 
   }
   &__price {
-
+ font-size: 30px;
   }
 }

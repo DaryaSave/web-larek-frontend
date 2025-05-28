@@ -1,17 +1,20 @@
 import { IModalData } from '../types';
+import { EventEmitter } from './base/events';
 
 export class Modal {
   private _popup: HTMLElement;
   private _closeButton: HTMLElement;
   private _content: HTMLElement;
+  private _events: EventEmitter;
 
-  constructor(popupSelector: string) {
+  constructor(popupSelector: string, events?: EventEmitter) {
     const popup = document.querySelector<HTMLElement>(popupSelector);
     if (!popup) {
       throw new Error(`Элемент с селектором ${popupSelector} не найден.`);
     }
 
     this._popup = popup;
+    this._events = events || new EventEmitter();
 
     const closeButton = popup.querySelector<HTMLElement>('.modal__close');
     const content = popup.querySelector<HTMLElement>('.modal__content');
@@ -40,12 +43,14 @@ export class Modal {
   /** Открывает модальное окно */
   open(): void {
     this._popup.classList.add('modal_active');
+    this._events.emit('modal:open');
   }
 
   /** Закрывает модальное окно и очищает содержимое */
   close(): void {
     this._popup.classList.remove('modal_active');
     this._content.innerHTML = '';
+    this._events.emit('modal:close');
   }
 
   /** Отображает данные в модальном окне */

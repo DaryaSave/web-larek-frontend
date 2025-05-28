@@ -48,6 +48,7 @@ export class AppState {
 
   /** Устанавливает данные каталога */
   setCatalog(products: IProductItem[]): void {
+     console.log('Полученные данные из API:', products); 
     this.catalog = [...products];
   }
 
@@ -60,8 +61,8 @@ export class AppState {
   }
 
   /** Удаляет товар из корзины и обновляет заказ */
-  removeFromBasket(productId: string): void {
-    this.basket = this.basket.filter(p => p.id !== productId);
+  removeFromBasket(id: string) {
+    this.basket = this.basket.filter(item => item.id !== id);
     this.updateOrder();
   }
 
@@ -80,6 +81,8 @@ export class AppState {
   }
 
   /** Проверяет наличие товара в корзине */
+  // В класс AppState добавляем:
+
   checkProduct(productId: string): boolean {
     return this.basket.some(p => p.id === productId);
   }

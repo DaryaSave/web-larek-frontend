@@ -13,11 +13,11 @@ export class Contacts {
         this._events = events;
 
         // Поиск полей с явным приведением типа
-    const inputPhone = this._formElement.querySelector<HTMLInputElement>('input[name="phone"]');
-    const inputEmail = this._formElement.querySelector<HTMLInputElement>('input[name="email"]');
+        const inputPhone = this._formElement.querySelector<HTMLInputElement>('input[name="phone"]');
+        const inputEmail = this._formElement.querySelector<HTMLInputElement>('input[name="email"]');
 
-      if (!inputPhone || !inputEmail) {
-      throw new Error('Не найдены обязательные поля формы');
+        if (!inputPhone || !inputEmail) {
+            throw new Error('Не найдены обязательные поля формы');
         }
 
         this._inputPhone = inputPhone;
@@ -32,7 +32,7 @@ export class Contacts {
 
     set email(value: string) {
         this._email = value;
-        this._events.emit('contacts:email', value);
+        this.validateForm();
     }
 
     get phone(): string {
@@ -41,7 +41,7 @@ export class Contacts {
 
     set phone(value: string) {
         this._phone = value;
-        this._events.emit('contacts:phone', value);
+        this.validateForm();
     }
 
     render(): HTMLFormElement {
@@ -59,35 +59,40 @@ export class Contacts {
         this._inputEmail.addEventListener('input', () => 
             this.handleInput('email', this._inputEmail.value)
         );
+        
+        // Обработчик отправки формы
+        this._formElement.addEventListener('submit', (e) => this.handleSubmit(e));
     }
 
-    validate(): boolean {
+    validateForm(): void {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^\+?[\d\s\-()]{7,}$/;
 
-        const isValid = {
-            email: emailRegex.test(this.email),
-            phone: phoneRegex.test(this.phone)
-        };
+        const isEmailValid = emailRegex.test(this.email);
+        const isPhoneValid = phoneRegex.test(this.phone);
+        const isFormValid = isEmailValid && isPhoneValid;
 
-        this._inputEmail.setCustomValidity(
-            isValid.email ? '' : 'Неверный формат email'
-        );
-        this._inputPhone.setCustomValidity(
-            isValid.phone ? '' : 'Неверный формат телефона'
-        );
+        const submitButton = this._formElement.querySelector<HTMLButtonElement>('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = !isFormValid;
+        }
+    }
 
-        // Принудительное обновление состояния валидации
-        this._formElement.classList.toggle('form_invalid', !(isValid.email && isValid.phone));
+    handleSubmit(event: SubmitEvent): void {
+        event.preventDefault();
         
-        return isValid.email && isValid.phone;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[\d\s\-()]{7,}$/;
+
+        if (emailRegex.test(this.email) && phoneRegex.test(this.phone)) {
+            this._events.emit('order:success');
+        }
     }
 
     // Метод для очистки
-    clear() {
+    clear(): void {
         this.phone = '';
         this.email = '';
         this._formElement.reset();
-        this._formElement.classList.remove('form_invalid');
     }
 }

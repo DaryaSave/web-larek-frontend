@@ -10,10 +10,28 @@ export class Success {
   }
 
   /** Отображает сообщение об успешной оплате и сумму */
-  render(totalAmount: number, message: string): void {
-    this._total.textContent = `${totalAmount.toFixed(2)} ₽`;
-    this._message.textContent = message;
-    this.show();
+  render(totalAmount: number, message: string): HTMLElement {
+    const template = document.querySelector('#success') as HTMLTemplateElement;
+    const element = template.content.cloneNode(true) as DocumentFragment;
+    
+    const totalElement = element.querySelector('.order-success__description') as HTMLElement;
+    const closeButton = element.querySelector('.order-success__close') as HTMLElement;
+    
+    if (totalElement) {
+      totalElement.textContent = `Списано ${totalAmount.toLocaleString('ru-RU')} синапсов`;
+    }
+    
+    if (closeButton) {
+      closeButton.addEventListener('click', () => {
+        // Закрываем модальное окно
+        const modal = document.querySelector('#modal-container') as HTMLElement;
+        if (modal) {
+          modal.classList.remove('modal_active');
+        }
+      });
+    }
+    
+    return element.firstElementChild as HTMLElement;
   }
 
   /** Показывает компонент */

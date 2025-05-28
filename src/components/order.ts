@@ -1,4 +1,5 @@
 import { EventEmitter } from '../components/base/events';
+
 export class Order {
   private _formElement: HTMLFormElement;
   private _buttons: HTMLElement[];
@@ -23,7 +24,7 @@ export class Order {
     // Обработчик для кнопок оплаты
     this._buttons.forEach((button) => {
       button.addEventListener('click', () => {
-        const method = button.dataset.paymentMethod;
+        const method = button.getAttribute('name');
         if (method) {
           this.setPaymentMethod(method);
         }
@@ -35,6 +36,7 @@ export class Order {
     if (addressInput) {
       addressInput.addEventListener('input', (e) => {
         this.address = (e.target as HTMLInputElement).value;
+        this.validateForm();
       });
     }
 
@@ -42,31 +44,29 @@ export class Order {
     this._formElement.addEventListener('submit', (e) => this.handleSubmit(e));
   }
 
-  validate(): boolean {
-    if (!this.payment) {
-      alert('Пожалуйста, выберите способ оплаты');
-      return false;
+  validateForm(): void {
+    const submitButton = this._formElement.querySelector<HTMLButtonElement>('.order__button');
+    if (submitButton) {
+      submitButton.disabled = !(this.payment && this.address.trim());
     }
-
-    if (!this.address.trim()) {
-      alert('Пожалуйста, введите адрес доставки');
-      return false;
-    }
-
-    return true;
   }
 
   setPaymentMethod(method: string): void {
     this.payment = method;
     this._events.emit('payment:changed', method);
-    // Обновляем стили кнопок, выделяя выбранную
+    
+    // Обновляем стили кнопок
     this._buttons.forEach(button => {
-      if (button.dataset.paymentMethod === method) {
-        button.classList.add('selected'); // предположим, что класс 'selected' выделяет кнопку
+      if (button.getAttribute('name') === method) {
+        button.classList.remove('button_alt');
+        button.classList.add('button_alt-active');
       } else {
-        button.classList.remove('selected');
+        button.classList.remove('button_alt-active');
+        button.classList.add('button_alt');
       }
     });
+    
+    this.validateForm();
   }
 
   async submitOrder(): Promise<void> {
@@ -108,8 +108,8 @@ export class Order {
   handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
 
-    if (this.validate()) {
-      this.submitOrder();
+    if (this.payment && this.address.trim()) {
+      this._events.emit('contacts:open');
     }
   }
 }
