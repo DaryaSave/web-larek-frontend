@@ -1,4 +1,4 @@
-import { EventEmitter } from '../components/base/events';
+import { EventEmitter } from '../base/events';
 
 export class Contacts {
     private _formElement: HTMLFormElement;

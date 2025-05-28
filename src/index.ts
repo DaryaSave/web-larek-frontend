@@ -1,22 +1,18 @@
 import './scss/styles.scss';
 
 import { API_URL } from './utils/constants';
-
-import { Api } from './components/base/api';
+import { Api } from './components/services/api';
 import { EventEmitter } from './components/base/events';
-import { AppState } from './components/base/appState';
+import { AppState } from './components/services/appState';
 import { IProductItem } from './types';
-
-import { Card } from './components/card';
-import { Catalog } from './components/catalog';
-import { Basket } from './components/basket';
-import { Modal } from './components/modal';
-import { Order } from './components/order';
-import { Contacts } from './components/contacts';
-import { Success } from './components/success';
-import { createBasketItem } from './components/basket';
-import { Page } from './components/page'; 
-import { IBasketItem } from './types';
+import { Card } from './components/views/card';
+import { Catalog } from './components/views/catalog';
+import { Modal } from './components/views/modal';
+import { Order } from './components/views/order';
+import { Contacts } from './components/views/contacts';
+import { Success } from './components/views/success';
+import { createBasketItem } from './components/views/basket';
+import { Page } from './components/views/page'; 
 
 // === Инициализация ===
 const api = new Api(API_URL);
@@ -25,11 +21,11 @@ const appState = new AppState();
 const page = new Page({
   counterSelector: '.header__basket-counter',
   catalogSelector: '.gallery',
-  wrapperSelector: '.page__wrapper'
+  wrapperSelector: '.page__wrapper',
+  basketSelector: '.header__basket',
 });
 
 // === DOM-элементы ===
-// Получаем элементы DOM с явным указанием типов
 const catalogContainer = document.querySelector('.gallery') as HTMLElement;
 const modalContainer = document.querySelector('#modal-container') as HTMLElement;
 
@@ -59,8 +55,6 @@ if (!catalogContainer || !modalContainer) {
 }
 
 // === Компоненты ===
-
-
 const modal = new Modal('#modal-container', events); 
 
 const catalog = new Catalog(
@@ -98,17 +92,9 @@ events.on('card:add', (item: IProductItem) => {
   modal.close();
 });
 
-
-
-
-  
- 
-   
-
-
-
 // Открытие корзины
 events.on('basket:open', () => {
+
   // Создаем содержимое корзины из шаблона
   const basketElement = basketTemplate.content.cloneNode(true) as DocumentFragment;
   const basketContainer = basketElement.querySelector('.basket') as HTMLElement;
@@ -127,7 +113,6 @@ events.on('basket:open', () => {
   // Обновляем общую стоимость
   const totalPrice = appState.basket.reduce((sum, item) => sum + (item.price || 0), 0);
   basketPrice.textContent = `${totalPrice.toLocaleString('ru-RU')} синапсов`;
-  
 
    // Получаем кнопку оформления как HTMLButtonElement
   const checkoutButton = basketElement.querySelector('.basket__button') as HTMLButtonElement;
@@ -152,8 +137,6 @@ events.on('basket:open', () => {
   modal.setContent(basketContainer);
   modal.open();
 });
-
-
 
 events.on('basket:updated', () => {
   const basketCounter = document.querySelector('.header__basket-counter');

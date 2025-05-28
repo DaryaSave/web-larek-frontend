@@ -29,6 +29,13 @@ export class Api {
                 .then((data) => Promise.reject(data.error ?? response.statusText));
     }
 
+    delete<T>(uri: string): Promise<T> {
+    return fetch(this.baseUrl + uri, {
+        ...this.options,
+        method: 'DELETE'
+    }).then(response => this.handleResponse<T>(response));
+}
+
     get<T>(uri: string): Promise<T> {
         return fetch(this.baseUrl + uri, {
             ...this.options,
@@ -53,8 +60,8 @@ export class Api {
                     id: item.id,
                     title: item.title,
                     description: item.description,
-                    price: item.price ?? 0, // Если price null, то устанавливаем 0
-                    imageUrl: CDN_URL + item.image, // Формируем полный URL изображения
+                    price: item.price ?? 0, 
+                    imageUrl: CDN_URL + item.image, 
                     category: item.category
                 }));
                 

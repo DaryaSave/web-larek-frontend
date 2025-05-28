@@ -1,4 +1,4 @@
-import { EventEmitter } from '../components/base/events';
+import { EventEmitter } from '../base/events';
 
 export class Order {
   private _formElement: HTMLFormElement;
@@ -15,8 +15,6 @@ export class Order {
   }
 
   render(): HTMLFormElement {
-    // В данном контексте render возвращает форму, 
-    // возможно, она уже есть на странице, поэтому просто возвращаем элемент
     return this._formElement;
   }
 
@@ -76,7 +74,6 @@ export class Order {
     };
 
     try {
-      // Пример отправки запроса на сервер
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -91,15 +88,13 @@ export class Order {
 
       alert('Заказ успешно отправлен!');
 
-      // Очистка корзины и формы (если нужно)
+      // Очистка корзины и формы 
       this._formElement.reset();
       this.payment = '';
       this.address = '';
 
       this._buttons.forEach(button => button.classList.remove('selected'));
 
-      // Дополнительно можно вызвать колбек очистки корзины, если есть
-      // this.clearCart();
     } catch (error) {
       alert(`Ошибка: ${(error as Error).message}`);
     }

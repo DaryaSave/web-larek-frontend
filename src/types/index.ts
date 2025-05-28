@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 // Типы данных для товаров
 export interface IProductItem {
     id: string;
@@ -27,7 +25,6 @@ export interface IBasketItem extends IProductItem {
 }
 
 // Типы данных для заказов
-
 // Форма оформления заказа (вводимые данные пользователя)
 export interface IOrderForm {
     payment: string;
@@ -86,6 +83,11 @@ export enum EventTypes {
     ORDER_PLACED = 'ORDER_PLACED',
 }
 
+// Тип данных для модального окна
+export interface IModalData {
+  content: HTMLElement;
+}
+
 export interface IEvent<T = unknown> {
     type: EventTypes;
     data: T;
@@ -94,7 +96,4 @@ export interface IEvent<T = unknown> {
 // Экспорт всех типов для удобного импорта
 export * from './index';
 
-// Тип данных для модального окна
-export interface IModalData {
-  content: HTMLElement;
-}
+

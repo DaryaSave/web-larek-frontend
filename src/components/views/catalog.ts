@@ -1,14 +1,15 @@
-import { IProductItem } from '../types';
+import { IProductItem } from '../../types';
+import { Card } from './card';
 
 export class Catalog {
   private _container: HTMLElement;
   private _items: IProductItem[] = [];
   private _onCardSelect?: (data: IProductItem) => void;
-  private _createCard: (data: IProductItem) => any;
+  private _createCard: (data: IProductItem) => Card;
 
   constructor(
     container: HTMLElement,
-    createCard: (data: IProductItem) => any,
+    createCard: (data: IProductItem) => Card,
     onCardSelect?: (data: IProductItem) => void
   ) {
     if (!container) throw new Error('Container element is required');
@@ -17,14 +18,14 @@ export class Catalog {
     this._onCardSelect = onCardSelect;
   }
 
-  /** Отрисовывает все карточки */
+  // Отрисовывает все карточки 
   render(items: IProductItem[]): void {
     this.clear();
     this._items = items;
     this._items.forEach(item => this.addItem(item));
   }
 
-  /** Добавляет одну карточку */
+  // Добавляет одну карточку 
   addItem(data: IProductItem): void {
     if (!this._container) return;
     
@@ -44,7 +45,7 @@ export class Catalog {
     }
   }
 
-  /** Создает карточку для каталога */
+  // Создает карточку для каталога 
   private createCatalogCard(data: IProductItem): HTMLElement {
     const template = document.querySelector('#card-catalog') as HTMLTemplateElement;
     if (!template) throw new Error('Шаблон #card-catalog не найден');
@@ -77,7 +78,7 @@ export class Catalog {
     return element;
   }
 
-  /** Получает класс для категории */
+  // Получает класс для категории 
   private getCategoryClass(category: string): string {
     const categoryMap: { [key: string]: string } = {
       'софт-скил': 'soft',
@@ -89,7 +90,7 @@ export class Catalog {
     return categoryMap[category] || 'other';
   }
 
-  /** Очищает каталог */
+  // Очищает каталог
   clear(): void {
     if (this._container) {
       this._container.innerHTML = '';

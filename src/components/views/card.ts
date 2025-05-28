@@ -1,4 +1,4 @@
-import { IProductItem } from '../types';
+import { IProductItem } from '../../types';
 
 export class Card {
   private _data: IProductItem;
@@ -19,7 +19,7 @@ export class Card {
     const template = document.getElementById('card-preview') as HTMLTemplateElement;
     if (!template) throw new Error('Шаблон #card-preview не найден');
 
-    // Клонируем содержимое шаблона (первый элемент внутри)
+    // Клонируем содержимое шаблона
     const firstElement = template.content.firstElementChild;
     if (!firstElement) {
       throw new Error('Шаблон пустой, элемент не найден');
@@ -74,8 +74,6 @@ export class Card {
       if (this._data.price === null || this._data.price === 0) {
         button.disabled = true;
         button.classList.add('button_disabled');
-        // Можно изменить текст кнопки, чтобы отразить неработающее состояние:
-        // button.textContent = 'В корзину (бесценно)';
         return;
       }
       // В противном случае навешиваем обработчик клика.

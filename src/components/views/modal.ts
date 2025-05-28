@@ -1,5 +1,5 @@
-import { IModalData } from '../types';
-import { EventEmitter } from './base/events';
+import { IModalData } from '../../types';
+import { EventEmitter } from '../base/events';
 
 export class Modal {
   private _popup: HTMLElement;
@@ -34,26 +34,26 @@ export class Modal {
     });
   }
 
-  /** Устанавливает новое содержимое модального окна */
+  // Устанавливает новое содержимое модального окна 
   setContent(element: HTMLElement) {
     this._content.innerHTML = '';
     this._content.appendChild(element);
   }
 
-  /** Открывает модальное окно */
+  // Открывает модальное окно 
   open(): void {
     this._popup.classList.add('modal_active');
     this._events.emit('modal:open');
   }
 
-  /** Закрывает модальное окно и очищает содержимое */
+  // Закрывает модальное окно и очищает содержимое 
   close(): void {
     this._popup.classList.remove('modal_active');
     this._content.innerHTML = '';
     this._events.emit('modal:close');
   }
 
-  /** Отображает данные в модальном окне */
+  // Отображает данные в модальном окне 
   render(data: IModalData): void {
     this._content = data.content;
     this.open();

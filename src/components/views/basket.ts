@@ -1,5 +1,5 @@
-import { IBasketItem } from '../types';
-import { EventEmitter } from '../components/base/events';
+import { IBasketItem } from '../../types';
+import { EventEmitter } from '../base/events';
 
 export class Basket {
   private _container: HTMLElement;
@@ -21,7 +21,7 @@ export class Basket {
     this._total = totalElement;
     this._createBasketItem = createBasketItem;
 
-    // Создаем кнопку "Оформить" один раз — изначально отключенную.
+    // Создает кнопку "Оформить" один раз — изначально отключенную.
     this._checkoutButton = document.createElement('button');
     this._checkoutButton.className = 'button basket__checkout';
     this._checkoutButton.textContent = 'Оформить';
@@ -35,25 +35,24 @@ export class Basket {
 
   public render(items: IBasketItem[]): void {
     this._items = items;
-    // Очищаем контейнер, чтобы убрать старую разметку.
+    // Очищает контейнер, чтобы убрать старую разметку.
     this._container.innerHTML = '';
 
-    // Отрисовываем каждый товар из массива
+    // Отрисовывает каждый товар из массива
     items.forEach((item, index) => {
-      // Добавляем индекс для отображения порядкового номера
       const itemWithIndex = { ...item, index: index + 1 };
       const element = this._createBasketItem(itemWithIndex, this.events);
       this._container.appendChild(element);
     });
 
-    // Обновляем итоговую сумму корзины
+    // Обновляет итоговую сумму корзины
     const totalPrice = items.reduce((sum, item) => sum + (item.price || 0), 0);
     this._total.textContent = `${totalPrice.toLocaleString('ru-RU')} синапсов`;
 
-    // Добавляем кнопку "Оформить" в конец контейнера.
+    // Добавляет кнопку "Оформить" в конец контейнера.
     this._container.appendChild(this._checkoutButton);
 
-    // Обновляем состояние кнопки (если товаров нет — отключена, иначе активна)
+    // Обновляет состояние кнопки (если товаров нет — отключена, иначе активна)
     this.updateCheckoutButton();
   }
 
@@ -65,13 +64,6 @@ export class Basket {
     } else {
       this._checkoutButton.classList.remove('button_disabled');
     }
-    // Лог для отладки: выведем количество товаров и состояние кнопки.
-    console.log(
-      "updateCheckoutButton: items count =", 
-      this._items.length, 
-      "; disabled =", 
-      this._checkoutButton.disabled
-    );
   }
 
   public addItem(item: IBasketItem): void {
@@ -98,11 +90,7 @@ export class Basket {
   }
 }
 
-/**
- * Утилитная функция для создания DOM-элемента для товара в корзине.
- * Она принимает товар и экземпляр событий, создаёт элемент,
- * вешает обработчик удаления и возвращает готовый элемент.
- */
+// Утилитная функция для создания DOM-элемента для товара в корзине. 
 export function createBasketItem(item: IBasketItem, events: EventEmitter): HTMLElement {
   const li = document.createElement('li');
   li.classList.add('basket__item', 'card', 'card_compact');

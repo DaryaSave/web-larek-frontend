@@ -1,12 +1,7 @@
-// ===== AppData.ts =====
 import { Api } from './api';
-import { UserInfo } from '../userInfo';
+import { UserInfo } from '../services/userInfo';
 import { IProductItem } from '../../types';
 
-/**
- * Менеджер данных приложения: хранит список товаров и корзину,
- * взаимодействует с сервером и UserInfo.
- */
 export class AppData {
   private _api: Api;
   private _userInfo: UserInfo;
@@ -22,9 +17,7 @@ export class AppData {
     this._userInfo = userInfo;
   }
 
-  /**
-   * Инициализация приложения: загрузка пользователя и товаров.
-   */
+  /** Инициализация приложения: загрузка пользователя и товаров */
   async initApp(): Promise<void> {
     try {
       await this._userInfo.fetchUser();
@@ -40,20 +33,17 @@ export class AppData {
     return [...this._items];
   }
 
-  /**
-   * Создаёт новый товар на сервере и добавляет в начало списка.
-   */
+  /** Создаёт новый товар на сервере и добавляет в начало списка */
   async addItem(data: IProductItem): Promise<IProductItem> {
     const added = await this._api.post('/products', data) as IProductItem;
     this._items.unshift(added);
     return added;
   }
 
-  /**
-   * Удаляет товар на сервере и из локального списка.
-   */
+  /** Удаляет товар на сервере и из локального списка */
   async deleteItem(itemId: string): Promise<void> {
-  await this._api.post(`/product/${itemId}`, {}, 'DELETE')
+  await this._api.delete(`/product/${itemId}`);
+
     this._items = this._items.filter(item => item.id !== itemId);
   }
 

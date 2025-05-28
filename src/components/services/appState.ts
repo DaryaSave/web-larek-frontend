@@ -81,8 +81,6 @@ export class AppState {
   }
 
   /** Проверяет наличие товара в корзине */
-  // В класс AppState добавляем:
-
   checkProduct(productId: string): boolean {
     return this.basket.some(p => p.id === productId);
   }
