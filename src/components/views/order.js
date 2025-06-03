@@ -1,93 +1,86 @@
-export class Order {
-    constructor(formElement, buttons) {
-        this.payment = '';
-        this.address = '';
-        this._formElement = formElement;
+import { Form } from '../base/form';
+import { OrderFormModel } from '../models/formModel';
+export class Order extends Form {
+    constructor(formElement, buttons, events) {
+        // Инициализируем поля ДО вызова super
+        const model = new OrderFormModel();
+        super(formElement, events, model.getData());
+        // Инициализируем остальные поля после super
         this._buttons = buttons;
-        this.setEventListeners();
+        this._model = model;
+        this._addressInput = this._element.querySelector('input[name="address"]');
+        // Теперь вызываем init после того как все поля установлены
+        this.init();
     }
-    render() {
-        // В данном контексте render возвращает форму, 
-        // возможно, она уже есть на странице, поэтому просто возвращаем элемент
-        return this._formElement;
+    cacheElements() {
+        // Все элементы уже кэшированы в конструкторе
     }
     setEventListeners() {
-        // Обработчик для кнопок оплаты
+        // Проверяем, что buttons инициализированы
+        if (!this._buttons) {
+            console.error('Buttons not initialized');
+            return;
+        }
+        // Обработчики для кнопок оплаты
         this._buttons.forEach((button) => {
             button.addEventListener('click', () => {
-                const method = button.dataset.paymentMethod;
+                const method = button.getAttribute('name');
                 if (method) {
                     this.setPaymentMethod(method);
                 }
             });
         });
         // Обработчик для поля адреса
-        const addressInput = this._formElement.querySelector('input[name="address"]');
-        if (addressInput) {
-            addressInput.addEventListener('input', (e) => {
-                this.address = e.target.value;
+        if (this._addressInput) {
+            this._addressInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                this.setField('address', value);
+                this._model.setField('address', value);
             });
         }
-        // Обработчик отправки формы
-        this._formElement.addEventListener('submit', (e) => this.handleSubmit(e));
     }
     validate() {
-        if (!this.payment) {
-            alert('Пожалуйста, выберите способ оплаты');
-            return false;
-        }
-        if (!this.address.trim()) {
-            alert('Пожалуйста, введите адрес доставки');
-            return false;
-        }
-        return true;
+        const errors = [];
+        const modelErrors = this._model.getErrors();
+        Object.values(modelErrors).forEach(fieldErrors => {
+            errors.push(...fieldErrors);
+        });
+        return {
+            valid: this._model.isValid(),
+            errors
+        };
     }
     setPaymentMethod(method) {
-        this.payment = method;
-        // Обновляем стили кнопок, выделяя выбранную
+        this.setField('payment', method);
+        this._model.setField('payment', method);
+        this._events.emit('payment:changed', method);
+        // Обновляем стили кнопок
         this._buttons.forEach(button => {
-            if (button.dataset.paymentMethod === method) {
-                button.classList.add('selected'); // предположим, что класс 'selected' выделяет кнопку
+            if (button.getAttribute('name') === method) {
+                button.classList.remove('button_alt');
+                button.classList.add('button_alt-active');
             }
             else {
-                button.classList.remove('selected');
+                button.classList.remove('button_alt-active');
+                button.classList.add('button_alt');
             }
         });
     }
-    async submitOrder() {
-        const orderData = {
-            payment: this.payment,
-            address: this.address.trim(),
-        };
-        try {
-            // Пример отправки запроса на сервер
-            const response = await fetch('/api/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            });
-            if (!response.ok) {
-                throw new Error(`Ошибка при отправке заказа: ${response.statusText}`);
-            }
-            alert('Заказ успешно отправлен!');
-            // Очистка корзины и формы (если нужно)
-            this._formElement.reset();
-            this.payment = '';
-            this.address = '';
-            this._buttons.forEach(button => button.classList.remove('selected'));
-            // Дополнительно можно вызвать колбек очистки корзины, если есть
-            // this.clearCart();
-        }
-        catch (error) {
-            alert(`Ошибка: ${error.message}`);
-        }
+    onSubmit(data) {
+        // Передаем данные наверх через событие, без прямых API запросов
+        this._events.emit('order:submit', data);
+        this._events.emit('contacts:open');
     }
-    handleSubmit(event) {
-        event.preventDefault();
-        if (this.validate()) {
-            this.submitOrder();
+    // Переопределяем clear для сброса модели
+    clear() {
+        super.clear();
+        this._model.clear();
+        // Сброс стилей кнопок
+        if (this._buttons) {
+            this._buttons.forEach(button => {
+                button.classList.remove('button_alt-active');
+                button.classList.add('button_alt');
+            });
         }
     }
 }

@@ -1,12 +1,6 @@
 export class Success {
-  private _total: HTMLElement;
-  private _message: HTMLElement;
-  private _close: HTMLElement;
-
-  constructor(totalElement: HTMLElement, closeButton: HTMLElement, messageElement: HTMLElement) {
-    this._total = totalElement;
-    this._message = messageElement;
-    this._close = closeButton;
+  constructor() {
+    // Убираем зависимость от предварительной инициализации элементов
   }
 
   // Отображает сообщение об успешной оплате и сумму 
@@ -28,29 +22,18 @@ export class Success {
     
     if (closeButton) {
       closeButton.addEventListener('click', () => {
-        // Закрывает модальное окно
-        const modal = document.querySelector('#modal-container') as HTMLElement;
-        if (modal) {
-          modal.classList.remove('modal_active');
+        // Используем правильный способ закрытия через систему событий
+        // Найдем модальное окно и закроем его
+        const modalElement = document.querySelector('#modal-container') as HTMLElement;
+        if (modalElement) {
+          const closeBtn = modalElement.querySelector('.modal__close') as HTMLButtonElement;
+          if (closeBtn) {
+            closeBtn.click(); // Имитируем клик по кнопке закрытия
+          }
         }
       });
     }
     
     return element.firstElementChild as HTMLElement;
-  }
-
-  // Показывает компонент 
-  show(): void {
-    this._total.closest('.success')?.classList.add('success_active');
-  }
-
-  // Скрывает компонент 
-  hide(): void {
-    this._total.closest('.success')?.classList.remove('success_active');
-  }
-
-  // Назначает обработчик для кнопки закрытия 
-  setCloseListener(handler: () => void): void {
-    this._close.addEventListener('click', handler);
   }
 }

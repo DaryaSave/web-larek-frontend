@@ -1,40 +1,43 @@
-/**
- * Менеджер данных пользователя.
- * Загружает и хранит информацию о текущем пользователе.
- */
 export class UserInfo {
-    /**
-     * @param api — клиент API для запросов, ожидается endpoint /user
-     */
-    constructor(api) {
+    constructor() {
         this._data = null;
-        this._api = api;
     }
-    /**
-     * Запрашивает данные пользователя с сервера и сохраняет локально.
-     */
-    async fetchUser() {
-        const user = await this._api.get('/user');
+    /** Устанавливает данные пользователя */
+    setUser(user) {
         this._data = user;
-        return user;
     }
-    /**
-     * Возвращает текущие данные пользователя.
-     * Если данные ещё не загружены, вернёт null.
-     */
+    /** Возвращает копию данных пользователя */
     getUser() {
         return this._data ? Object.assign({}, this._data) : null;
     }
-    /**
-     * Обновляет данные пользователя на сервере и локально.
-     * @param updates — поля для обновления (например, имя, email)
-     */
-    async updateUser(updates) {
+    /** Обновляет локальные данные пользователя */
+    updateUser(updates) {
         if (!this._data) {
             throw new Error('UserInfo: данные пользователя не загружены');
         }
-        const updated = await this._api.post('/user', updates, 'PUT');
-        this._data = updated;
-        return updated;
+        this._data = Object.assign(Object.assign({}, this._data), updates);
+    }
+    /** Очищает данные пользователя */
+    clearUser() {
+        this._data = null;
+    }
+    /** Проверяет, загружены ли данные пользователя */
+    hasUser() {
+        return this._data !== null;
+    }
+    /** Возвращает ID пользователя */
+    getUserId() {
+        var _a;
+        return ((_a = this._data) === null || _a === void 0 ? void 0 : _a.id) || null;
+    }
+    /** Возвращает имя пользователя */
+    getUserName() {
+        var _a;
+        return ((_a = this._data) === null || _a === void 0 ? void 0 : _a.name) || null;
+    }
+    /** Возвращает email пользователя */
+    getUserEmail() {
+        var _a;
+        return ((_a = this._data) === null || _a === void 0 ? void 0 : _a.email) || null;
     }
 }

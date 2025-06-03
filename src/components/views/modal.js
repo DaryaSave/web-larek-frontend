@@ -1,10 +1,12 @@
+import { EventEmitter } from '../base/events';
 export class Modal {
-    constructor(popupSelector) {
+    constructor(popupSelector, events) {
         const popup = document.querySelector(popupSelector);
         if (!popup) {
             throw new Error(`Элемент с селектором ${popupSelector} не найден.`);
         }
         this._popup = popup;
+        this._events = events || new EventEmitter();
         const closeButton = popup.querySelector('.modal__close');
         const content = popup.querySelector('.modal__content');
         if (!closeButton || !content) {
@@ -19,21 +21,27 @@ export class Modal {
             }
         });
     }
-    /** Устанавливает новое содержимое модального окна */
+    // Устанавливает новое содержимое модального окна 
     setContent(element) {
         this._content.innerHTML = '';
         this._content.appendChild(element);
     }
-    /** Открывает модальное окно */
+    // Открывает модальное окно 
     open() {
         this._popup.classList.add('modal_active');
+        this._events.emit('modal:open');
     }
-    /** Закрывает модальное окно и очищает содержимое */
+    // Закрывает модальное окно и очищает содержимое 
     close() {
         this._popup.classList.remove('modal_active');
         this._content.innerHTML = '';
+        this._events.emit('modal:close');
     }
-    /** Отображает данные в модальном окне */
+    // Проверяет, открыто ли модальное окно
+    isOpen() {
+        return this._popup.classList.contains('modal_active');
+    }
+    // Отображает данные в модальном окне 
     render(data) {
         this._content = data.content;
         this.open();

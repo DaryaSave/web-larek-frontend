@@ -1,18 +1,12 @@
-/**
- * Глобальное состояние приложения: корзина, каталог, заказ, данные форм и ошибки.
- */
 export class AppState {
     constructor(initialState = {}) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f;
         this.basket = (_a = initialState.basket) !== null && _a !== void 0 ? _a : [];
         this.catalog = (_b = initialState.catalog) !== null && _b !== void 0 ? _b : [];
         this.order = {
             items: (_d = (_c = initialState.order) === null || _c === void 0 ? void 0 : _c.items) !== null && _d !== void 0 ? _d : [],
             total: (_f = (_e = initialState.order) === null || _e === void 0 ? void 0 : _e.total) !== null && _f !== void 0 ? _f : 0,
         };
-        this.orderForm = { payment: '', address: '', email: '', phone: '' };
-        this.contactForm = { valid: false, errors: [], email: '', phone: '' };
-        this.formErrors = (_g = initialState.formErrors) !== null && _g !== void 0 ? _g : {};
     }
     /** Возвращает сумму цен товаров в корзине */
     getTotal() {
@@ -20,6 +14,7 @@ export class AppState {
     }
     /** Устанавливает данные каталога */
     setCatalog(products) {
+        console.log('Полученные данные из API:', products);
         this.catalog = [...products];
     }
     /** Добавляет товар в корзину, если его там нет, и обновляет заказ */
@@ -30,8 +25,8 @@ export class AppState {
         }
     }
     /** Удаляет товар из корзины и обновляет заказ */
-    removeFromBasket(productId) {
-        this.basket = this.basket.filter(p => p.id !== productId);
+    removeFromBasket(id) {
+        this.basket = this.basket.filter(item => item.id !== id);
         this.updateOrder();
     }
     /** Очищает корзину и сбрасывает заказ */
@@ -39,48 +34,13 @@ export class AppState {
         this.basket = [];
         this.clearOrder();
     }
-    /** Очищает данные заказа и формы */
+    /** Очищает данные заказа */
     clearOrder() {
         this.order = { items: [], total: 0 };
-        this.orderForm = { payment: '', address: '', email: '', phone: '' };
-        this.contactForm = { valid: false, errors: [], email: '', phone: '' };
-        this.formErrors = {};
     }
     /** Проверяет наличие товара в корзине */
     checkProduct(productId) {
         return this.basket.some(p => p.id === productId);
-    }
-    /** Устанавливает поле формы заказа */
-    setOrderField(field, value) {
-        this.orderForm[field] = value;
-    }
-    /** Валидирует форму заказа: payment и address */
-    validateOrder() {
-        const errors = [];
-        if (!this.orderForm.payment)
-            errors.push('Способ оплаты не выбран');
-        if (!this.orderForm.address)
-            errors.push('Адрес не указан');
-        this.formErrors.order = errors;
-        return errors.length === 0;
-    }
-    setContactField(field, value) {
-        this.contactForm[field] = value;
-    }
-    /** Валидирует контактную форму */
-    validateContact() {
-        const errors = [];
-        const email = this.contactForm.email;
-        const phone = this.contactForm.phone;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9\s\-()]{7,}$/;
-        if (!emailRegex.test(email))
-            errors.push('Неверный формат email');
-        if (!phoneRegex.test(phone))
-            errors.push('Неверный формат телефона');
-        this.formErrors.contact = errors;
-        this.contactForm.valid = errors.length === 0;
-        return errors.length === 0;
     }
     /** Обновляет поля заказа (items и total) на основе корзины */
     updateOrder() {

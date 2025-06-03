@@ -53,6 +53,11 @@ export class Modal {
     this._events.emit('modal:close');
   }
 
+  // Проверяет, открыто ли модальное окно
+  isOpen(): boolean {
+    return this._popup.classList.contains('modal_active');
+  }
+
   // Отображает данные в модальном окне 
   render(data: IModalData): void {
     this._content = data.content;

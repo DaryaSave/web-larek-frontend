@@ -1,56 +1,54 @@
-export class Contacts {
-    constructor(formElement) {
-        this._formElement = formElement;
-        // Ищем в форме поля для телефона и email по селекторам (например, по имени или id)
-        this._inputPhone = this._formElement.querySelector('input[name="phone"]');
-        if (!this._inputPhone) {
-            throw new Error('Поле "phone" не найдено в форме');
+import { Form } from '../base/form';
+import { ContactsFormModel } from '../models/formModel';
+export class Contacts extends Form {
+    constructor(formElement, events) {
+        const model = new ContactsFormModel();
+        super(formElement, events, model.getData());
+        this._model = model;
+        // Кэшируем элементы один раз
+        this._inputPhone = this._element.querySelector('input[name="phone"]');
+        this._inputEmail = this._element.querySelector('input[name="email"]');
+        if (!this._inputPhone || !this._inputEmail) {
+            throw new Error('Не найдены обязательные поля формы');
         }
-        this._inputEmail = this._formElement.querySelector('input[name="email"]');
-        if (!this._inputEmail) {
-            throw new Error('Поле "email" не найдено в форме');
-        }
-        // Инициализируем значения из формы
-        this.phone = this._inputPhone.value || '';
-        this.email = this._inputEmail.value || '';
-        // Навешиваем обработчики событий
-        this.setEventListeners();
+        // Теперь вызываем init после того как все поля установлены
+        this.init();
     }
-    /** Возвращает DOM-элемент формы */
-    render() {
-        return this._formElement;
-    }
-    /** Навешивает обработчики input, обновляет phone и email */
     setEventListeners() {
-        this._inputPhone.addEventListener('input', () => {
-            this.phone = this._inputPhone.value;
-        });
-        this._inputEmail.addEventListener('input', () => {
-            this.email = this._inputEmail.value;
-        });
+        if (this._inputPhone) {
+            this._inputPhone.addEventListener('input', () => {
+                const value = this._inputPhone.value;
+                this.setField('phone', value);
+                this._model.setField('phone', value);
+            });
+        }
+        if (this._inputEmail) {
+            this._inputEmail.addEventListener('input', () => {
+                const value = this._inputEmail.value;
+                this.setField('email', value);
+                this._model.setField('email', value);
+            });
+        }
     }
-    /** Проверяет корректность email и телефона */
     validate() {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^\+?[0-9\s\-()]{7,}$/;
-        const emailValid = emailRegex.test(this.email);
-        const phoneValid = phoneRegex.test(this.phone);
-        // Можно добавить отображение ошибок в UI, если нужно (например, подсветку полей)
-        if (!emailValid) {
-            this._inputEmail.setCustomValidity('Неверный формат email');
-        }
-        else {
-            this._inputEmail.setCustomValidity('');
-        }
-        if (!phoneValid) {
-            this._inputPhone.setCustomValidity('Неверный формат телефона');
-        }
-        else {
-            this._inputPhone.setCustomValidity('');
-        }
-        // Обновляем встроенный механизм валидации формы
-        this._inputEmail.reportValidity();
-        this._inputPhone.reportValidity();
-        return emailValid && phoneValid;
+        const errors = [];
+        const modelErrors = this._model.getErrors();
+        Object.values(modelErrors).forEach(fieldErrors => {
+            errors.push(...fieldErrors);
+        });
+        return {
+            valid: this._model.isValid(),
+            errors
+        };
+    }
+    onSubmit(data) {
+        // Передаем данные наверх через событие, без валидации в View
+        this._events.emit('contacts:submit', data);
+        this._events.emit('order:success');
+    }
+    // Переопределяем clear для сброса модели
+    clear() {
+        super.clear();
+        this._model.clear();
     }
 }

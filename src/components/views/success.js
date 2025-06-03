@@ -1,27 +1,33 @@
 export class Success {
-    constructor(totalElement, closeButton, messageElement) {
-        this._total = totalElement;
-        this._message = messageElement;
-        this._close = closeButton;
+    constructor() {
+        // Убираем зависимость от предварительной инициализации элементов
     }
-    /** Отображает сообщение об успешной оплате и сумму */
+    // Отображает сообщение об успешной оплате и сумму 
     render(totalAmount, message) {
-        this._total.textContent = `${totalAmount.toFixed(2)} ₽`;
-        this._message.textContent = message;
-        this.show();
-    }
-    /** Показывает компонент */
-    show() {
-        var _a;
-        (_a = this._total.closest('.success')) === null || _a === void 0 ? void 0 : _a.classList.add('success_active');
-    }
-    /** Скрывает компонент */
-    hide() {
-        var _a;
-        (_a = this._total.closest('.success')) === null || _a === void 0 ? void 0 : _a.classList.remove('success_active');
-    }
-    /** Назначает обработчик для кнопки закрытия */
-    setCloseListener(handler) {
-        this._close.addEventListener('click', handler);
+        const template = document.querySelector('#success');
+        const element = template.content.cloneNode(true);
+        const messageElement = element.querySelector('.success__message');
+        if (messageElement) {
+            messageElement.textContent = message;
+        }
+        const totalElement = element.querySelector('.order-success__description');
+        const closeButton = element.querySelector('.order-success__close');
+        if (totalElement) {
+            totalElement.textContent = `Списано ${totalAmount.toLocaleString('ru-RU')} синапсов`;
+        }
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                // Используем правильный способ закрытия через систему событий
+                // Найдем модальное окно и закроем его
+                const modalElement = document.querySelector('#modal-container');
+                if (modalElement) {
+                    const closeBtn = modalElement.querySelector('.modal__close');
+                    if (closeBtn) {
+                        closeBtn.click(); // Имитируем клик по кнопке закрытия
+                    }
+                }
+            });
+        }
+        return element.firstElementChild;
     }
 }

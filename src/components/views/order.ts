@@ -1,25 +1,39 @@
 import { EventEmitter } from '../base/events';
+import { Form, IFormState } from '../base/form';
+import { OrderFormModel, IOrderData } from '../models/formModel';
 
-export class Order {
-  private _formElement: HTMLFormElement;
+export class Order extends Form<IOrderData> {
   private _buttons: HTMLElement[];
-  protected _events: EventEmitter;
-  public payment = '';
-  public address = '';
+  private _model: OrderFormModel;
+  private _addressInput: HTMLInputElement | null;
 
   constructor(formElement: HTMLFormElement, buttons: HTMLElement[], events: EventEmitter) {
-    this._formElement = formElement;
+    // Инициализируем поля ДО вызова super
+    const model = new OrderFormModel();
+    
+    super(formElement, events, model.getData());
+    
+    // Инициализируем остальные поля после super
     this._buttons = buttons;
-    this._events = events;
-    this.setEventListeners();
+    this._model = model;
+    this._addressInput = this._element.querySelector<HTMLInputElement>('input[name="address"]');
+    
+    // Теперь вызываем init после того как все поля установлены
+    this.init();
   }
 
-  render(): HTMLFormElement {
-    return this._formElement;
+  private cacheElements(): void {
+    // Все элементы уже кэшированы в конструкторе
   }
 
-  setEventListeners(): void {
-    // Обработчик для кнопок оплаты
+  protected setEventListeners(): void {
+    // Проверяем, что buttons инициализированы
+    if (!this._buttons) {
+      console.error('Buttons not initialized');
+      return;
+    }
+
+    // Обработчики для кнопок оплаты
     this._buttons.forEach((button) => {
       button.addEventListener('click', () => {
         const method = button.getAttribute('name');
@@ -30,27 +44,32 @@ export class Order {
     });
 
     // Обработчик для поля адреса
-    const addressInput = this._formElement.querySelector<HTMLInputElement>('input[name="address"]');
-    if (addressInput) {
-      addressInput.addEventListener('input', (e) => {
-        this.address = (e.target as HTMLInputElement).value;
-        this.validateForm();
+    if (this._addressInput) {
+      this._addressInput.addEventListener('input', (e) => {
+        const value = (e.target as HTMLInputElement).value;
+        this.setField('address', value);
+        this._model.setField('address', value);
       });
     }
-
-    // Обработчик отправки формы
-    this._formElement.addEventListener('submit', (e) => this.handleSubmit(e));
   }
 
-  validateForm(): void {
-    const submitButton = this._formElement.querySelector<HTMLButtonElement>('.order__button');
-    if (submitButton) {
-      submitButton.disabled = !(this.payment && this.address.trim());
-    }
+  protected validate(): IFormState {
+    const errors: string[] = [];
+    const modelErrors = this._model.getErrors();
+    
+    Object.values(modelErrors).forEach(fieldErrors => {
+      errors.push(...fieldErrors);
+    });
+
+    return {
+      valid: this._model.isValid(),
+      errors
+    };
   }
 
   setPaymentMethod(method: string): void {
-    this.payment = method;
+    this.setField('payment', method);
+    this._model.setField('payment', method);
     this._events.emit('payment:changed', method);
     
     // Обновляем стили кнопок
@@ -63,48 +82,25 @@ export class Order {
         button.classList.add('button_alt');
       }
     });
+  }
+
+  protected onSubmit(data: IOrderData): void {
+    // Передаем данные наверх через событие, без прямых API запросов
+    this._events.emit('order:submit', data);
+    this._events.emit('contacts:open');
+  }
+
+  // Переопределяем clear для сброса модели
+  clear(): void {
+    super.clear();
+    this._model.clear();
     
-    this.validateForm();
-  }
-
-  async submitOrder(): Promise<void> {
-    const orderData = {
-      payment: this.payment,
-      address: this.address.trim(),
-    };
-
-    try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
+    // Сброс стилей кнопок
+    if (this._buttons) {
+      this._buttons.forEach(button => {
+        button.classList.remove('button_alt-active');
+        button.classList.add('button_alt');
       });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка при отправке заказа: ${response.statusText}`);
-      }
-
-      alert('Заказ успешно отправлен!');
-
-      // Очистка корзины и формы 
-      this._formElement.reset();
-      this.payment = '';
-      this.address = '';
-
-      this._buttons.forEach(button => button.classList.remove('selected'));
-
-    } catch (error) {
-      alert(`Ошибка: ${(error as Error).message}`);
-    }
-  }
-
-  handleSubmit(event: SubmitEvent): void {
-    event.preventDefault();
-
-    if (this.payment && this.address.trim()) {
-      this._events.emit('contacts:open');
     }
   }
 }

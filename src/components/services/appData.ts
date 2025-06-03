@@ -1,31 +1,12 @@
-import { Api } from './api';
-import { UserInfo } from '../services/userInfo';
 import { IProductItem } from '../../types';
 
 export class AppData {
-  private _api: Api;
-  private _userInfo: UserInfo;
   private _items: IProductItem[] = [];
   private _cart: IProductItem[] = [];
 
-  /**
-   * @param api — клиент API для запросов к серверу
-   * @param userInfo — менеджер данных пользователя
-   */
-  constructor(api: Api, userInfo: UserInfo) {
-    this._api = api;
-    this._userInfo = userInfo;
-  }
-
-  /** Инициализация приложения: загрузка пользователя и товаров */
-  async initApp(): Promise<void> {
-    try {
-      await this._userInfo.fetchUser();
-      const products = await this._api.getProductList();
-      this._items = products;
-    } catch (err) {
-      console.error('Ошибка инициализации приложения:', err);
-    }
+  /** Устанавливает список товаров */
+  setItems(items: IProductItem[]): void {
+    this._items = items;
   }
 
   /** Возвращает все загруженные товары */
@@ -33,17 +14,13 @@ export class AppData {
     return [...this._items];
   }
 
-  /** Создаёт новый товар на сервере и добавляет в начало списка */
-  async addItem(data: IProductItem): Promise<IProductItem> {
-    const added = await this._api.post('/products', data) as IProductItem;
-    this._items.unshift(added);
-    return added;
+  /** Добавляет товар в начало списка */
+  addItem(item: IProductItem): void {
+    this._items.unshift(item);
   }
 
-  /** Удаляет товар на сервере и из локального списка */
-  async deleteItem(itemId: string): Promise<void> {
-  await this._api.delete(`/product/${itemId}`);
-
+  /** Удаляет товар из локального списка */
+  deleteItem(itemId: string): void {
     this._items = this._items.filter(item => item.id !== itemId);
   }
 

@@ -9,9 +9,8 @@ export class Model {
     constructor(data, events) {
         this.events = events;
         Object.assign(this, data);
-    } // Сообщить всем что модель поменялась 
+    }
     emitChanges(event, payload) {
-        // Состав данных можно модифицировать
         this.events.emit(event, payload !== null && payload !== void 0 ? payload : {});
     }
 }

@@ -13,21 +13,30 @@ export class Page {
         if (!this._basket)
             throw new Error(`Element not found: ${options.basketSelector}`);
     }
-    /** Блокирует или разблокирует прокрутку страницы */
+    // Блокирует или разблокирует прокрутку страницы 
     locked(isLocked) {
-        this._wrapper.style.overflow = isLocked ? 'hidden' : '';
+        if (isLocked) {
+            this._wrapper.classList.add('page__wrapper_locked');
+        }
+        else {
+            this._wrapper.classList.remove('page__wrapper_locked');
+        }
     }
-    /** Обновляет счетчик товаров в корзине */
+    // Обновляет счетчик товаров в корзине 
     setCounter(count) {
         this._counter.textContent = String(count);
     }
-    /** Очищает каталог товаров */
+    // Очищает каталог товаров 
     clearCatalog() {
         this._catalog.innerHTML = '';
     }
-    /** Открывает или закрывает корзину */
+    // Открывает или закрывает корзину 
     toggleBasket(isOpen) {
-        this._basket.classList.toggle('basket--open', isOpen);
-        this.locked(isOpen);
+        if (isOpen) {
+            this._basket.classList.add('basket--open');
+        }
+        else {
+            this._basket.classList.remove('basket--open');
+        }
     }
 }

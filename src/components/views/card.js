@@ -11,7 +11,7 @@ export class Card {
         const template = document.getElementById('card-preview');
         if (!template)
             throw new Error('Шаблон #card-preview не найден');
-        // Клонируем содержимое шаблона (первый элемент внутри)
+        // Клонируем содержимое шаблона
         const firstElement = template.content.firstElementChild;
         if (!firstElement) {
             throw new Error('Шаблон пустой, элемент не найден');
@@ -25,32 +25,53 @@ export class Card {
         const category = this._element.querySelector('.card__category');
         const description = this._element.querySelector('.card__text');
         const price = this._element.querySelector('.card__price');
-        const button = this._element.querySelector('.card__button');
-        if (button) {
-            button.textContent = 'Добавить в корзину';
-        }
         if (title)
             title.textContent = this._data.title;
         if (image) {
             image.src = this._data.imageUrl;
             image.alt = this._data.title;
         }
-        if (category)
+        if (category) {
             category.textContent = this._data.category;
+            // Добавляем класс категории для стилизации
+            category.className = `card__category card__category_${this._getCategoryClass(this._data.category)}`;
+        }
         if (description)
             description.textContent = this._data.description;
-        if (price)
-            price.textContent = `${this._data.price.toLocaleString()} синапсов`;
+        if (price) {
+            if (this._data.price === null || this._data.price === 0) {
+                price.textContent = 'Бесценно';
+            }
+            else {
+                price.textContent = `${this._data.price.toLocaleString('ru-RU')} синапсов`;
+            }
+        }
+    }
+    _getCategoryClass(category) {
+        const categoryMap = {
+            'софт-скил': 'soft',
+            'хард-скил': 'hard',
+            'другое': 'other',
+            'дополнительное': 'additional',
+            'кнопка': 'button'
+        };
+        return categoryMap[category] || 'other';
     }
     _setEventListeners() {
         const button = this._element.querySelector('.card__button');
-        if (!button)
-            throw new Error('Кнопка card__button не найдена');
-        button.addEventListener('click', () => {
-            this._handleAddToCart(this._data);
-            button.textContent = 'В корзине';
-            button.setAttribute('disabled', 'true');
-        });
+        if (button) {
+            // Если стоимость товара равна "Бесценно" (price === null или 0),
+            // отключаем кнопку и не навешиваем обработчик.
+            if (this._data.price === null || this._data.price === 0) {
+                button.disabled = true;
+                button.classList.add('button_disabled');
+                return;
+            }
+            // В противном случае навешиваем обработчик клика.
+            button.addEventListener('click', () => {
+                this._handleAddToCart(this._data);
+            });
+        }
     }
     getElement() {
         return this._element;
